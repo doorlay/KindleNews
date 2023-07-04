@@ -83,7 +83,7 @@ def write_to_outfile(article: str) -> None:
 def lambda_handler(event, context):
     f = open(FILE_NAME, "x")
     f.close()
-    urls = ["https://apnews.com/world-news", "https://apnews.com/science", "https://apnews.com/hub/artificial-intelligence"]
+    urls = ["https://apnews.com/world-news", "https://apnews.com/science"]
     for i, url in enumerate(urls):
         page = scrape_page(url)
         article_links = get_article_links(page)
@@ -92,12 +92,14 @@ def lambda_handler(event, context):
             out_file.write("WORLD NEWS\n\n")
         elif i == 1:
             out_file.write("SCIENCE NEWS\n\n")
-        elif i == 2:
-            out_file.write("TECHNOLOGY NEWS\n\n")
         out_file.close()
+        article_set = set()
         for article in article_links:
             page = scrape_page(article)
             article = parse_page(page)
+            # Add articles to a set to remove duplicates
             if is_valid_article(article):
-                write_to_outfile(article)
+                article_set.add(article)
+        for article in article_set:
+            write_to_outfile(article)
     send_file_to_kindle(FILE_NAME)
