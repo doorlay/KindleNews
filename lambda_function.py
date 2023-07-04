@@ -1,0 +1,103 @@
+import os
+import requests
+import base64
+import bs4
+
+from datetime import date
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
+
+FILE_NAME = f"/tmp/{date.today()}-news.txt"
+
+def send_file_to_kindle(file_name: str) -> int:
+    # Given a file name, sends this file to my Kindle
+    message = Mail(
+        from_email='kindle@doorlay.com',
+        to_emails='ndoorlay@kindle.com',
+        subject='Convert',
+        html_content=" "
+    )
+    with open(file_name, 'rb') as f:
+        data = f.read()
+        f.close()
+    encoded_file = base64.b64encode(data).decode()
+    attachedFile = Attachment(
+        FileContent(encoded_file),
+        FileName(FILE_NAME[5:]),
+        FileType('text/plain'),
+        Disposition('attachment')
+    )
+    message.attachment = attachedFile
+    sg = SendGridAPIClient(os.environ.get('SENDGRID_API_KEY'))
+    response = sg.send(message)
+    return response.status_code
+
+
+def scrape_page(url: str) -> requests.models.Response:
+    # Given a URL, GETs the page
+    page = requests.get(url)
+    if page.status_code != 200:
+        raise Exception(f"Error grabbing page: {page.status_code}")
+    return page
+
+
+def get_article_links(page: requests.models.Response) -> list:
+    # Given a page, extracts a list of all article links
+    soup = bs4.BeautifulSoup(page.text, features="html.parser")
+    article_divs = soup.find_all("div", class_="PagePromo-title")
+    article_links = []
+    for article in article_divs:
+        article_links.append(article.a.get("href"))
+    return article_links
+
+
+def parse_page(page: requests.models.Response) -> str:
+    # Given a requests response page, returns a string representing an article
+    soup = bs4.BeautifulSoup(page.text, features="html.parser")
+    split_article = soup.find_all("p")
+    first_ptag = 0
+    for i, p_tag in enumerate(split_article):
+        if "(AP) — " in p_tag.get_text():
+            first_ptag = i
+    # Removes paragraph tags, cuts out pre-article
+    article = " ".join([str(p_tag).replace("<p>","").replace("</p>","") for p_tag in split_article[first_ptag:-1]])
+    # Removes all <span> and <a> tags, extracts their content
+    soup = bs4.BeautifulSoup(article, features="html.parser")
+    article = soup.get_text()
+    return article
+
+
+def is_valid_article(article: str) -> bool:
+    # Given a string article, determines whether or not it is a valid article
+    return not article[0:35] == "Copyright 2023 The Associated Press"
+
+
+def write_to_outfile(article: str) -> None:
+    # Given a string article, writes this to the output .txt file
+    out_file = open(FILE_NAME, "a")
+    out_file.write(article)
+    out_file.write("\n\n")
+    out_file.close()
+
+
+def lambda_handler(event, context):
+    f = open(FILE_NAME, "x")
+    f.close()
+    urls = ["https://apnews.com/world-news", "https://apnews.com/science", "https://apnews.com/hub/artificial-intelligence"]
+    for i, url in enumerate(urls):
+        page = scrape_page(url)
+        article_links = get_article_links(page)
+        out_file = open(FILE_NAME, "a")
+        if i == 0:
+            out_file.write("WORLD NEWS\n\n")
+        elif i == 1:
+            out_file.write("SCIENCE NEWS\n\n")
+        elif i == 2:
+            out_file.write("TECHNOLOGY NEWS\n\n")
+        out_file.close()
+        for article in article_links:
+            page = scrape_page(article)
+            article = parse_page(page)
+            if is_valid_article(article):
+                write_to_outfile(article)
+    send_file_to_kindle(FILE_NAME)
