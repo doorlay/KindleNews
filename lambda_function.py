@@ -48,7 +48,7 @@ def get_article_links(page: requests.models.Response) -> list:
     article_links = []
     for article in article_divs:
         # Prevents trending articles from accidentally being added
-        if len(article.a.get("class")) == 0:
+        if len(article.a.get("class")) == 1:
             article_links.append(article.a.get("href"))
     return article_links
 
