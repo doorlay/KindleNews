@@ -57,12 +57,17 @@ def parse_page(page: requests.models.Response) -> str:
     # Given a requests response page, returns a string representing an article
     soup = bs4.BeautifulSoup(page.text, features="html.parser")
     split_article = soup.find_all("p")
+    # Remove photo descriptions
+    new_split_article = []
+    for p_tag in split_article:
+        if "(AP Photo" not in p_tag.get_text():
+            new_split_article.append(p_tag)
     first_ptag = 0
-    for i, p_tag in enumerate(split_article):
+    for i, p_tag in enumerate(new_split_article):
         if "(AP) — " in p_tag.get_text():
             first_ptag = i
     # Removes paragraph tags, cuts out pre-article
-    article = " ".join([str(p_tag).replace("<p>","").replace("</p>","") for p_tag in split_article[first_ptag:-1]])
+    article = " ".join([str(p_tag).replace("<p>","").replace("</p>","") for p_tag in new_split_article[first_ptag:-1]])
     # Removes all <span> and <a> tags, extracts their content
     soup = bs4.BeautifulSoup(article, features="html.parser")
     article = soup.get_text()
@@ -85,7 +90,7 @@ def write_to_outfile(article: str) -> None:
 def lambda_handler(event, context):
     f = open(FILE_NAME, "x")
     f.close()
-    urls = ["https://apnews.com/world-news", "https://apnews.com/science"]
+    urls = ["https://apnews.com/world-news"]
     for i, url in enumerate(urls):
         page = scrape_page(url)
         article_links = get_article_links(page)

@@ -1,6 +1,6 @@
 # KindleNews
 
-This is a microservice to send a personalized news feed to my Kindle every morning; at the moment, this includes just Associated Press world, science, and technology news. My plan for the future is to expand the scraping capability to other sources that I read regularly, such as NBA news.
+This is a microservice to send a personalized news feed to my Kindle every morning; at the moment, this includes just Associated Press world news. My plan for the future is to expand the scraping capability to other sources that I read regularly.
 
 ## Design
 The design is straightforward; an AWS Cloudwatch scheduled rule invokes an AWS Lambda function every morning at 6am PST. This Lambda function scrapes news data from my desired sources via BeautifulSoup, creates a text file of this news data, and uses the SendGrid API to send this file to my Kindle.
