@@ -60,7 +60,7 @@ def parse_page(page: requests.models.Response) -> str:
     # Remove photo descriptions
     new_split_article = []
     for p_tag in split_article:
-        if "(AP Photo" not in p_tag.get_text():
+        if "(AP Photo" not in p_tag.get_text() and "via AP)" not in p_tag.get_text():
             new_split_article.append(p_tag)
     first_ptag = 0
     for i, p_tag in enumerate(new_split_article):
