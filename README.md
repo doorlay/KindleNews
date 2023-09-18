@@ -1,12 +1,28 @@
+
 # KindleNews
+A simple microservice to deliver news to your Kindle every morning, deployed via CDK.
+# Setup
+1. Create and source a virtual environment.
+2. Ensure your AWS credentials are properly configured for deployment. This looks something like this on Linux or MacOS:
+```
+export AWS_ACCESS_KEY_ID=your_access_key_id
+export AWS_SECRET_ACCESS_KEY=your_secret_access_key
+export AWS_SESSION_TOKEN=your_session_token
+```
+and this on Windows:
+```
+set AWS_ACCESS_KEY_ID=your_access_key_id
+set AWS_SECRET_ACCESS_KEY=your_secret_access_key
+set AWS_SESSION_TOKEN=your_session_token
+```
+3. Ensure your AWS account has been bootstrapped. If it hasn't been, do so by running `cdk bootstrap`.
+4. Run `python3 -m pip install -r requirements.txt` to install all CDK dependencies.
+5. Run `./package_lambda.sh` to install all Lambda dependencies.
+6. Change the email on line 16 in `lambda/scraper.py` to the email address associated with your Kindle (if you're unsure what the email address associated with your Kindle is, give this a read: https://www.amazon.com/sendtokindle/email).
+7. Get an API key from SendGrid and update the environment variable on line 16 in `kindle_news/kindle_news_stack.py` to your API key: https://app.sendgrid.com/guide
 
-This is a microservice to send a personalized news feed to my Kindle every morning; at the moment, this includes just Associated Press world news. My plan for the future is to expand the scraping capability to other sources that I read regularly.
+# Deploying
 
-## Design
-The design is straightforward; an AWS Cloudwatch scheduled rule invokes an AWS Lambda function every morning at 6am PST. This Lambda function scrapes news data from my desired sources via BeautifulSoup, creates a text file of this news data, and uses the SendGrid API to send this file to my Kindle.
+When you're ready to deploy, ensure your virtual environment is active. Then run `cdk diff` to compare the deployed stack with the current state. If all looks as expected, run `cdk synth` and `cdk deploy` to deploy.
 
-## Deployment
-
-To deploy this microservice, you must package all dependencies into a Zip file for Lambda to execute properly. To do so, ensure there is not already a folder named "package" at the root of your project directory, and run `./deploy.sh`; this will create a zip file named `deployment_package.zip`.
-
-Navigate to the Lambda console and create a new Python Lambda function with a basic execution role. Once created, click "Upload From" and upload the `deployment_package.zip` you previously created. Once this Zip file is uploaded to Lambda, click the "Configure" tab and choose the "environment variable" sub-tab. Add an environment variable named `SENDGRID_API_KEY` with your SendGrid API key. Under the "General configuration" sub-tab, increase the Lambda timeout to 5 minutes. Under the "Triggers" sub-tab, click "Add trigger". Type in "EventBridge" to create a new CloudWatch scheduled rule with your chosen send-time. For example, a rule of 4am UTC every day would have the cron rule `cron(0 4 * * ? *)`.
+Delete requirements-dev.txt?
