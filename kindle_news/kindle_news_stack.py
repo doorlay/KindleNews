@@ -13,7 +13,7 @@ class KindleNewsStack(Stack):
         # Lambda function that scrapes and sends all data
         scraper_lambda = Function(self, "NewsScraper", runtime=Runtime.PYTHON_3_11, handler="scraper.handler", 
                                   code=Code.from_asset("lambda"), timeout=Duration.minutes(5), function_name="NewsScraper", environment={
-                                      "SENDGRID_API_KEY": "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"})
+                                      "SENDGRID_API_KEY": "insert your api key here"})
 
         # CloudWatch Scheduled Rule to invoke the above Lambda at 6am PST every day
         scraper_rule = Rule(self, "ScraperRule", schedule=Schedule.cron(hour="14",minute="0"), rule_name="ScraperRule")
