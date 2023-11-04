@@ -6,8 +6,11 @@ __pycache__
 *.egg-info
 
 # Ignore Lambda dependencies, but not Lambda code
-lambda/
+lambda/*
 !lambda/scraper.py
+
+# Ignore file that stores API key
+secrets.txt
 
 # CDK asset staging directory
 .cdk.staging
