@@ -10,7 +10,7 @@ lambda/*
 !lambda/lambda.py
 
 # Ignore file that stores API key
-secrets.txt
+credentials.env
 
 # CDK asset staging directory
 .cdk.staging

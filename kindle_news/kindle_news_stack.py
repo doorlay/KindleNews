@@ -29,5 +29,5 @@ class KindleNewsStack(Stack):
         )
         
         # Invokes the above function at 6am PST every day
-        scraper_rule = Rule(self, "ScraperRule", schedule=Schedule.cron(hour="14",minute="0"), rule_name="ScraperRule")
+        scraper_rule = Rule(self, "ScraperRule", schedule=Schedule.cron(hour="14",minute="0"), rule_name="ScraperRule", enabled=False)
         scraper_rule.add_target(LambdaFunction(scraper_function))
