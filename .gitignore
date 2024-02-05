@@ -7,7 +7,7 @@ __pycache__
 
 # Ignore Lambda dependencies, but not Lambda code
 lambda/*
-!lambda/scraper.py
+!lambda/lambda.py
 
 # Ignore file that stores API key
 secrets.txt

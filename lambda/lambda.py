@@ -7,7 +7,8 @@ from datetime import date
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail, Attachment, FileContent, FileName, FileType, Disposition
 
-FILE_NAME = f"/tmp/{date.today()}-news.txt"
+date_obj = date.today()
+FILE_NAME = f"/tmp/KindleNews {date_obj.strftime('%m-%d')}.txt"
 
 def send_file_to_kindle(file_name: str) -> int:
     # Given a file name, sends this file to my Kindle
