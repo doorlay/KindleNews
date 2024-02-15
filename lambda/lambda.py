@@ -45,7 +45,7 @@ def scrape_page(url: str) -> requests.models.Response:
 def get_article_links(page: requests.models.Response) -> list:
     # Given a page, extracts a list of all article links
     soup = bs4.BeautifulSoup(page.text, features="html.parser")
-    article_divs = soup.find_all("div", class_="PagePromo-title")
+    article_divs = soup.find_all("h3", class_="PagePromo-title")
     article_links = []
     for article in article_divs:
         # Prevents trending articles from accidentally being added
@@ -77,7 +77,7 @@ def parse_page(page: requests.models.Response) -> str:
 
 def is_valid_article(article: str) -> bool:
     # Given a string article, determines whether or not it is a valid article
-    return not article[0:35] == "Copyright 2023 The Associated Press"
+    return not article[0:35] == "Copyright 2024 The Associated Press"
 
 
 def write_to_outfile(article: str) -> None:
@@ -91,13 +91,13 @@ def write_to_outfile(article: str) -> None:
 def handler(event, context):
     f = open(FILE_NAME, "x")
     f.close()
-    urls = ["https://apnews.com/world-news"]
+    urls = ["https://apnews.com/us-news"]
     for i, url in enumerate(urls):
         page = scrape_page(url)
         article_links = get_article_links(page)
         out_file = open(FILE_NAME, "a")
         if i == 0:
-            out_file.write("WORLD NEWS\n\n")
+            out_file.write("U.S. NEWS\n\n")
         out_file.close()
         article_set = set()
         for article in article_links:
@@ -109,3 +109,5 @@ def handler(event, context):
         for article in article_set:
             write_to_outfile(article)
     send_file_to_kindle(FILE_NAME)
+            
+handler(None, None)
